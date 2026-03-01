@@ -26,8 +26,51 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at top right, #111A24, var(--root-bg));
+  background: var(--root-bg);
   overflow-x: hidden;
+  position: relative;
+}
+
+/* Quantum Noise Background */
+.quantum-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 15% 50%, rgba(0, 176, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(0, 230, 118, 0.05) 0%, transparent 50%);
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-100vh) scaleY(1);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.5;
+  }
+
+  90% {
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateY(100vh) scaleY(2);
+    opacity: 0;
+  }
 }
 
 h1,
@@ -178,12 +221,61 @@ h5 {
   border-left: 4px solid var(--accent-secondary);
 }
 
-.risk-high {
-  border-left-color: var(--accent-danger);
+/* System Grid */
+.system-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-.risk-low {
-  border-left-color: var(--accent-primary);
+.system-node {
+  background: rgba(20, 30, 45, 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.system-node.risk-high {
+  border-color: rgba(255, 61, 0, 0.4);
+}
+
+.system-node.risk-high::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 61, 0, 0.05);
+  animation: pulse-red 2s infinite;
+  z-index: 0;
+}
+
+.system-node.risk-low {
+  border-color: rgba(0, 230, 118, 0.3);
+}
+
+@keyframes pulse-red {
+  0% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0.3;
+  }
+}
+
+.sys-content {
+  position: relative;
+  z-index: 1;
 }
 
 .chain-viewer {

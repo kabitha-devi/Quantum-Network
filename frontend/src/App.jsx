@@ -4,6 +4,56 @@ import { Shield, ShieldAlert, Activity, Database, Zap, GitBranch } from 'lucide-
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import './index.css'
 
+// Helper component for animated counting numbers
+const AnimatedCounter = ({ value, duration = 1 }) => {
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    let startTimestamp = null
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp
+      const progress = Math.min((timestamp - startTimestamp) / (duration * 1000), 1)
+      setCount(Math.floor(progress * value))
+      if (progress < 1) {
+        window.requestAnimationFrame(step)
+      }
+    }
+    window.requestAnimationFrame(step)
+  }, [value, duration])
+
+  return <span>{count}</span>
+}
+
+// Helper component for particle background
+const QuantumBackground = () => {
+  const [particles, setParticles] = useState([])
+
+  useEffect(() => {
+    // Generate static particles for performance
+    const newParticles = Array.from({ length: 40 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}vw`,
+      animationDuration: `${Math.random() * 5 + 5}s`,
+      animationDelay: `${Math.random() * 5}s`,
+      opacity: Math.random() * 0.5 + 0.1
+    }))
+    setParticles(newParticles)
+  }, [])
+
+  return (
+    <div className="quantum-bg">
+      {particles.map(p => (
+        <div key={p.id} className="particle" style={{
+          left: p.left,
+          animationDuration: p.animationDuration,
+          animationDelay: p.animationDelay,
+          opacity: p.opacity
+        }} />
+      ))}
+    </div>
+  )
+}
+
 function App() {
   const [mode, setMode] = useState('Classical')
   const [metrics, setMetrics] = useState(null)
@@ -146,13 +196,15 @@ function App() {
         </div>
       </header>
 
+      <QuantumBackground />
+
       <div className="grid-3">
         <motion.div className="glass-panel metric-box" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
             <Activity size={20} /> <span className="metric-label">Avg Block Time</span>
           </div>
           <span className="metric-value">
-            {metrics ? metrics.block_time_ms.toFixed(2) : '--'} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>ms</span>
+            {metrics ? <AnimatedCounter value={Math.floor(metrics.block_time_ms)} /> : '--'}.{metrics ? (metrics.block_time_ms % 1).toFixed(2).substring(2) : '00'} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>ms</span>
           </span>
         </motion.div>
 
@@ -161,7 +213,7 @@ function App() {
             <Database size={20} /> <span className="metric-label">Public Key Size</span>
           </div>
           <span className="metric-value">
-            {metrics ? metrics.pub_key_size_bytes : '--'} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>bytes</span>
+            {metrics ? <AnimatedCounter value={metrics.pub_key_size_bytes} /> : '--'} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>bytes</span>
           </span>
         </motion.div>
 
@@ -232,7 +284,7 @@ function App() {
             <h2 style={{ marginBottom: '1rem' }}>Enterprise HNDL Risk Scan</h2>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '3rem', fontWeight: 'bold', color: migrationData.overall_risk_score > 50 ? 'var(--accent-danger)' : 'var(--accent-primary)' }}>
-                {migrationData.overall_risk_score}/100
+                <AnimatedCounter value={migrationData.overall_risk_score} />/100
               </div>
               <div style={{ color: 'var(--text-muted)' }}>Overall Portfolio Quantum Risk<br />(Harvest Now, Decrypt Later)</div>
             </div>
@@ -261,15 +313,17 @@ function App() {
               </div>
             </div>
 
-            <div className="timeline">
+            <div className="system-grid">
               {migrationData.system_analysis.map((sys, idx) => (
-                <div key={idx} className={`timeline-item ${sys.hndl_exposure ? 'risk-high' : 'risk-low'}`}>
-                  <div>
-                    <h4 style={{ marginBottom: '0.2rem' }}>{sys.system}</h4>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Current: {sys.algorithm} | Criticality: {sys.criticality}</span>
-                  </div>
-                  <div>
-                    {sys.hndl_exposure ? <span style={{ color: 'var(--accent-danger)', fontWeight: 'bold' }}>EXPOSED</span> : <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>SAFE</span>}
+                <div key={idx} className={`system-node ${sys.hndl_exposure ? 'risk-high' : 'risk-low'}`}>
+                  <div className="sys-content">
+                    <h4 style={{ marginBottom: '0.2rem', color: 'var(--text-main)', fontSize: '1.1rem' }}>{sys.system}</h4>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Current: {sys.algorithm} | Criticality: {sys.criticality}</div>
+                    <div>
+                      {sys.hndl_exposure ?
+                        <span style={{ display: 'inline-block', background: 'rgba(255, 61, 0, 0.2)', color: 'var(--accent-danger)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(255,61,0,0.5)', fontWeight: 'bold', fontSize: '0.75rem', animation: 'pulse-red 1s infinite alternate' }}>BREACH EXPOSURE</span> :
+                        <span style={{ display: 'inline-block', background: 'rgba(0, 230, 118, 0.2)', color: 'var(--accent-primary)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(0,230,118,0.5)', fontWeight: 'bold', fontSize: '0.75rem' }}>QUANTUM SECURE</span>}
+                    </div>
                   </div>
                 </div>
               ))}
