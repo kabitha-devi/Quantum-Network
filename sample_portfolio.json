@@ -1,0 +1,32 @@
+[
+    {
+        "name": "Global Payment Gateway",
+        "crypto": "RSA-2048",
+        "criticality": "High",
+        "data_lifespan_years": 25.0
+    },
+    {
+        "name": "Customer Identity DB",
+        "crypto": "ECC-256",
+        "criticality": "High",
+        "data_lifespan_years": 15.0
+    },
+    {
+        "name": "Internal Analytics Dashboard",
+        "crypto": "SHA-256",
+        "criticality": "Low",
+        "data_lifespan_years": 1.0
+    },
+    {
+        "name": "Legacy Partner API",
+        "crypto": "RSA-1024",
+        "criticality": "Medium",
+        "data_lifespan_years": 5.0
+    },
+    {
+        "name": "Employee Health Records",
+        "crypto": "RSA-4096",
+        "criticality": "High",
+        "data_lifespan_years": 50.0
+    }
+]

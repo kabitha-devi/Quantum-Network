@@ -1,0 +1,38 @@
+# Q-Transition Implementation Plan
+
+## Goal Description
+Build "Q-Transition", a quantum-safe blockchain with an Enterprise Migration Framework for supply chains. The application demonstrates the vulnerability of classical cryptographic systems to quantum attacks (specifically Shor's Algorithm) and the resilience of Post-Quantum Cryptography (PQC) standards like CRYSTALS-Kyber and CRYSTALS-Dilithium. It also includes migration planning tools and Harvest Now, Decrypt Later (HNDL) risk models.
+
+## User Review Required
+> [!IMPORTANT]
+> The PQC logic requires native implementations or specific Python bindings like `pqcrypto` or `oqs`. Sometimes setting these up on Windows can be tricky. I will attempt to use pure-python fallback or accessible wheels if C-bindings fail, but recommend standard `pqcrypto` or `fastecdsa`/`rsa`/`pycryptodome` for classical side.
+> For the Quantum Attack part, Qiskit will be used to simulate a small-scale Shor's circuit or mathematically demonstrate the scaling vulnerability.
+
+## Proposed Changes
+
+### Backend (Python/FastAPI)
+The backend will serve as the core engine for blockchain handling, crypto, and simulations.
+- **Dependencies**: `fastapi`, `uvicorn`, `qiskit`, `qiskit-aer`, `rsa`, `ecdsa`, `pqcrypto` (or alternatives for Kyber/Dilithium), `pandas`, `sqlite3`
+- **Architecture**:
+  - `crypto_engine/`: Abstractions for Classical and PQC signing/verification and key exchange.
+  - `blockchain/`: Lightweight chain state, block generation, transaction validation.
+  - `supply_chain/`: Participants (Manufacturer, Distributor, Retailer).
+  - `simulations/`: Qiskit quantum vulnerability simulation, HNDL calculation.
+  - `migration/`: Enterprise migration scanner and cost estimator.
+  - `api/`: REST APIs to expose data to frontend.
+
+### Frontend (React/Vite)
+- **Dependencies**: `react`, `recharts` (for charts), `framer-motion` (for animations), `lucide-react` (for icons). Modern UI design using CSS modules. 
+- **Pages**:
+  - **Main Dashboard**: Mode toggle, real-time performance benchmark charts.
+  - **Supply Chain View**: Visual flow of assets from Manufacturer -> Retailer.
+  - **Risk & Migration**: HNDL Heatmap, Risk Scores, and Phased Roadmap.
+
+## Verification Plan
+### Automated Tests
+- Unit tests for CryptoEngine validating signatures in both Classical and PQC modes.
+- Block validation checks ensuring structural integrity.
+
+### Manual Verification
+- Run backend and interact with the Swagger docs.
+- Launch frontend, switch modes, and verify charts update dynamically with realistic benchmark data.
