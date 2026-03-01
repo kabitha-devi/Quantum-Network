@@ -11,6 +11,11 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [attackSim, setAttackSim] = useState(null)
   const [migrationData, setMigrationData] = useState(null)
+  const [attackProgress, setAttackProgress] = useState(0)
+  const [attackStatus, setAttackStatus] = useState("Idle")
+  const [glitchKey, setGlitchKey] = useState(0)
+  const [selectedBlock, setSelectedBlock] = useState(null)
+
   const [customData, setCustomData] = useState(JSON.stringify([
     { "name": "Custom Server 1", "crypto": "RSA-4096", "criticality": "High", "data_lifespan_years": 8 },
     { "name": "Old App", "crypto": "ECC-256", "criticality": "Medium", "data_lifespan_years": 4 }
@@ -19,6 +24,19 @@ function App() {
   useEffect(() => {
     fetchData()
     fetchMigrationData()
+    setGlitchKey(prev => prev + 1)
+
+    // Attack Simulation Logic
+    setAttackProgress(0)
+    if (mode === 'Classical') {
+      setAttackStatus("Calculating Qubits...")
+      const timer1 = setTimeout(() => { setAttackProgress(20); setAttackStatus("Running Shor's Algorithm...") }, 1000)
+      const timer2 = setTimeout(() => { setAttackProgress(60); setAttackStatus("Factoring Modulus...") }, 3000)
+      const timer3 = setTimeout(() => { setAttackProgress(100); setAttackStatus("Keys Compromised!") }, 5000)
+      return () => { clearTimeout(timer1); clearTimeout(timer2); clearTimeout(timer3) }
+    } else {
+      setAttackStatus("Attack Failed: Lattice cryptography is immune.")
+    }
   }, [mode])
 
   useEffect(() => {
@@ -176,9 +194,35 @@ function App() {
 
         <motion.div className="glass-panel" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
           <h2 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><GitBranch size={24} /> Blockchain State (Supply Chain)</h2>
-          <div className="chain-viewer">
-            {loading ? 'Mining blocks...' : JSON.stringify(chain, null, 2)}
-          </div>
+          <motion.div key={glitchKey} initial={{ opacity: 0, filter: 'blur(10px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ duration: 0.4 }} className="chain-viewer">
+            {loading ? 'Mining blocks...' : chain.map((block, idx) => (
+              <div key={idx} className={`block-node ${mode === 'Classical' ? (attackProgress === 100 ? 'compromised' : 'vulnerable') : 'secure'}`} onClick={() => setSelectedBlock(block)}>
+                <div className="block-header">
+                  <span>Block #{block.index}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{new Date(block.timestamp * 1000).toLocaleTimeString()}</span>
+                </div>
+                <div className="block-hash">
+                  Prev: {block.previous_hash.substring(0, 16)}...
+                </div>
+                <div className="block-txs">
+                  {block.transactions.length} Transactions<br />
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Secured via {mode === 'Classical' ? 'RSA-2048' : 'Dilithium'}</span>
+                </div>
+
+                {mode === 'Classical' && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <div className="attack-status">
+                      <span>{attackStatus}</span>
+                      <span>{attackProgress}%</span>
+                    </div>
+                    <div className="attack-bar-container">
+                      <div className="attack-bar" style={{ width: `${attackProgress}%` }}></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </motion.div>
         </motion.div>
       </div>
 
@@ -239,6 +283,7 @@ function App() {
                 <div>
                   <h4 style={{ color: 'var(--accent-secondary)' }}>Phase 1: {migrationData.migration_roadmap.phase_1.name}</h4>
                   <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Timeline: {migrationData.migration_roadmap.phase_1.timeline}</p>
+                  <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>Deploy PQC alongside classical algorithms. Ensures backward compatibility with legacy systems while securing data transfers against future quantum decryption.</p>
                 </div>
                 <div style={{ fontWeight: 'bold' }}>{migrationData.migration_roadmap.phase_1.cost_est}</div>
               </div>
@@ -246,6 +291,7 @@ function App() {
                 <div>
                   <h4 style={{ color: 'var(--accent-secondary)' }}>Phase 2: {migrationData.migration_roadmap.phase_2.name}</h4>
                   <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Timeline: {migrationData.migration_roadmap.phase_2.timeline}</p>
+                  <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>Prioritize migration of components highlighted as HIGH RISK in the HNDL scan above (e.g., identity databases, core ledgers) to pure Post-Quantum standards.</p>
                 </div>
                 <div style={{ fontWeight: 'bold' }}>{migrationData.migration_roadmap.phase_2.cost_est}</div>
               </div>
@@ -253,6 +299,7 @@ function App() {
                 <div>
                   <h4 style={{ color: 'var(--accent-primary)' }}>Phase 3: {migrationData.migration_roadmap.phase_3.name}</h4>
                   <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Timeline: {migrationData.migration_roadmap.phase_3.timeline}</p>
+                  <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>Full deprecation of RSA and ECC globally. Zero reliance on classical asymmetric primitives, achieving complete enterprise quantum immunity.</p>
                 </div>
                 <div style={{ fontWeight: 'bold' }}>{migrationData.migration_roadmap.phase_3.cost_est}</div>
               </div>
@@ -267,6 +314,41 @@ function App() {
           </motion.div>
         </div>
       )}
+
+      {/* Block Details Modal */}
+      {selectedBlock && (
+        <div className="modal-overlay" onClick={() => setSelectedBlock(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 style={{ margin: 0 }}>Block #{selectedBlock.index} Details</h2>
+              <button className="close-btn" onClick={() => setSelectedBlock(null)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <p style={{ color: 'var(--text-main)', marginBottom: '1rem' }}>
+                <strong>Time:</strong> {new Date(selectedBlock.timestamp * 1000).toLocaleString()}<br />
+                <strong>Hash:</strong> {selectedBlock.hash}<br />
+                <strong>Prev:</strong> {selectedBlock.previous_hash}
+              </p>
+              <h3 style={{ color: 'var(--accent-secondary)', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Transactions ({selectedBlock.transactions.length})</h3>
+              {selectedBlock.transactions.length === 0 ? <p>No transactions in this block (Genesis chunk)</p> : null}
+              {selectedBlock.transactions.map((tx, idx) => (
+                <div key={idx} style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', borderLeft: '3px solid var(--accent-primary)' }}>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Asset Transfer: </span>
+                    <strong style={{ color: 'var(--text-main)' }}>{tx.asset_id || "System Init"}</strong>
+                  </div>
+                  <div style={{ fontSize: '0.75rem' }}>
+                    <div style={{ marginBottom: '0.3rem' }}><span style={{ color: 'var(--text-muted)' }}>Sender PK:</span><br /> {tx.sender.substring(0, 60)}...</div>
+                    <div style={{ marginBottom: '0.5rem' }}><span style={{ color: 'var(--text-muted)' }}>Receiver PK:</span><br /> {tx.receiver.substring(0, 60)}...</div>
+                    <div><span style={{ color: 'var(--text-muted)' }}>Signature Validation ({mode}):</span><br /> <span style={{ color: mode === 'Classical' ? 'var(--accent-danger)' : 'var(--accent-primary)', wordBreak: 'break-all' }}>{tx.signature}</span></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

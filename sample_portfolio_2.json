@@ -1,0 +1,32 @@
+[
+    {
+        "name": "Customer Support Chatbot",
+        "crypto": "AES-256",
+        "criticality": "Medium",
+        "data_lifespan_years": 2.0
+    },
+    {
+        "name": "Cloud Storage Archives",
+        "crypto": "RSA-1024",
+        "criticality": "Low",
+        "data_lifespan_years": 10.0
+    },
+    {
+        "name": "Government Compliance Logs",
+        "crypto": "ECC-384",
+        "criticality": "High",
+        "data_lifespan_years": 30.0
+    },
+    {
+        "name": "Microservice API Tokens",
+        "crypto": "SHA-512",
+        "criticality": "Medium",
+        "data_lifespan_years": 0.5
+    },
+    {
+        "name": "Smart Contract Keys",
+        "crypto": "Secp256k1",
+        "criticality": "High",
+        "data_lifespan_years": 100.0
+    }
+]
